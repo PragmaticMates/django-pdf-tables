@@ -170,7 +170,7 @@ class PDFMixin(object):
         if self.override_footer:
             self.pdf.footer = self.footer
 
-        self.pdf.set_font(self.font, 'B')
+        self.set_fonts()
         self.pdf.set_margins(self.margin_left, self.margin_top, self.margin_right)
         self.pdf.set_auto_page_break(True, margin=self.margin_bottom)
         self.pdf.add_page()
@@ -179,6 +179,9 @@ class PDFMixin(object):
         # Go through keyword arguments and save their values to instance
         for arg in kwargs:
             setattr(self.pdf, arg, kwargs.get(arg))
+
+    def set_fonts(self):
+        self.pdf.set_font(self.font, '')
 
     def write_content(self):
         pass
@@ -207,7 +210,8 @@ class PDFTablesMixin(PDFMixin):
         },
         'widths': [1],
         'header': {
-            'row_height': 10,
+            'height': [10],
+            'padding': [0],
             'align': ['L'],
             'font_style': ['B'],
             'font_color': [colors.BLACK],
@@ -216,7 +220,8 @@ class PDFTablesMixin(PDFMixin):
             'max_chars': [None]
         },
         'body': {
-            'row_height': 5,
+            'height': [5],
+            'padding': [0],
             'align': ['L'],
             'font_style': [''],
             'font_color': [colors.BLACK],
@@ -239,7 +244,7 @@ class PDFTablesMixin(PDFMixin):
         pass
 
     def check_page_break(self, y):
-        if y > self.page_height - self.margin_bottom - self.table_attrs['body']['row_height']:
+        if y > self.page_height - self.margin_bottom - max(self.table_attrs['body']['height']):
             self.pdf.add_page(self.orientation)
             self.pdf.set_y(self.pdf.t_margin)
             return True
@@ -259,15 +264,22 @@ class PDFTablesMixin(PDFMixin):
             column_font_color = self.get_column_attribute('font_color', index, is_header)
             column_font_style = self.get_column_attribute('font_style', index, is_header)
             column_fill_color = self.get_column_attribute('fill_color', index, is_header)
+            column_font_size = self.get_column_attribute('font_size', index, is_header)
+            column_height = self.get_column_attribute('height', index, is_header)
+            column_padding = self.get_column_attribute('padding', index, is_header)
             fill = column_fill_color is not None
             if fill:
                 self.pdf.set_fill_color(*column_fill_color)
 
             self.pdf.set_text_color(*column_font_color)
-            self.pdf.set_font(self.font, column_font_style)
+            self.pdf.set_font(family=self.font, style=column_font_style, size=column_font_size)
+
+            self.pdf.set_xy(self.pdf.get_x()+column_padding, self.pdf.get_y()+column_padding)
             self.pdf.multi_cell(
-                w=column_width,
-                h=self.table_attrs['header' if is_header else 'body']['row_height'],
+                #w=column_width-2*column_padding,
+                #h=column_height-2*column_padding,
+                w=column_width-2*column_padding,
+                h=column_height,
                 align=column_align,
                 txt=text,
                 border=False,
@@ -278,6 +290,7 @@ class PDFTablesMixin(PDFMixin):
             if fill:
                 self.pdf.restore_fill_color()
 
+            self.pdf.set_y(self.pdf.get_y()+column_padding)
             y = self.pdf.get_y()
             x += column_width
 
@@ -288,13 +301,18 @@ class PDFTablesMixin(PDFMixin):
         # vertical lines
         self.draw_vertical_lines(y_init, y_max)
 
-        # check overflow
-        if self.check_page_break(y_max):
-            y_max = self.pdf.get_y()
+        ## check overflow
+        #if self.check_page_break(y_max):
+        #    y_max = self.pdf.get_y()
 
         return y_max
 
-    def write_table_header(self, header):
+    def write_table_header(self, table):
+        header = table.get('header', None)
+
+        if not header:
+            return
+
         # color and style
         color = self.table_attrs['line_color']['horizontal']
         style = self.table_attrs['line_style']['horizontal']
@@ -312,10 +330,12 @@ class PDFTablesMixin(PDFMixin):
             # line below header
             self.pdf.horizontal_line(self.pdf.l_margin, y_pos, self.content_width,
                                      weight=weight, color=color, style=style)
-        return y_pos
+        self.pdf.set_xy(self.pdf.l_margin, y_pos)
 
-    def write_table_body(self, body):
+    def write_table_body(self, table):
+        body = table['body']
         y_pos = self.pdf.get_y()
+
         for row in body:
             y_pos = self.write_table_row(row)
             self.pdf.set_xy(self.pdf.l_margin, y_pos)
@@ -329,18 +349,17 @@ class PDFTablesMixin(PDFMixin):
                 # line after each row
                 self.pdf.horizontal_line(self.pdf.l_margin, y_pos, self.content_width,
                                          weight=weight, color=color, style=style)
+
+            # check overflow
+            if self.check_page_break(y_pos):
+                y_pos = self.pdf.get_y()
+                self.write_table_header(table)
+
         return y_pos
 
     def write_table(self, table):
-        # header
-        header = table.get('header', None)
-
-        if header:
-            y_pos = self.write_table_header(header)
-            self.pdf.set_xy(self.pdf.l_margin, y_pos)
-
-        # body
-        self.write_table_body(table['body'])
+        self.write_table_header(table)
+        self.write_table_body(table)
 
     def draw_vertical_lines(self, y_top, y_bottom):
         x = self.pdf.l_margin
