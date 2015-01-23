@@ -319,6 +319,9 @@ class PDFTablesMixin(PDFMixin):
         width = self.table_attrs['border_width']['horizontal']
 
         if color:
+            # check overflow
+            self.check_page_break(self.pdf.get_y())
+
             # line above header
             self.pdf.horizontal_line(self.pdf.l_margin, self.pdf.get_y(), self.content_width,
                                      width=width, color=color, style=style)
@@ -336,7 +339,7 @@ class PDFTablesMixin(PDFMixin):
         body = table['body']
         y_pos = self.pdf.get_y()
 
-        for row in body:
+        for row_index, row in enumerate(body):
             y_pos = self.write_table_row(row)
             self.pdf.set_xy(self.pdf.l_margin, y_pos)
 
@@ -353,7 +356,9 @@ class PDFTablesMixin(PDFMixin):
             # check overflow
             if self.check_page_break(y_pos):
                 y_pos = self.pdf.get_y()
-                self.write_table_header(table)
+
+                if row_index < len(body) - 1:
+                    self.write_table_header(table)
 
         return y_pos
 
