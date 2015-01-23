@@ -10,11 +10,11 @@ from . import colors
 
 
 class FPDF_HTML(FPDF, HTMLMixin):
-    def vertical_line(self, x, y, length, color=None, weight=1, style='solid'):
-        self.line(x, y, x, y+length, color=color, weight=weight, style=style)
+    def vertical_line(self, x, y, length, color=None, width=1, style='solid'):
+        self.line(x, y, x, y+length, color=color, width=width, style=style)
 
-    def horizontal_line(self, x, y, length, color=None, weight=1, style='solid'):
-        self.line(x, y, x+length, y, color=color, weight=weight, style=style)
+    def horizontal_line(self, x, y, length, color=None, width=1, style='solid'):
+        self.line(x, y, x+length, y, color=color, width=width, style=style)
 
     def set_text_color(self, r, g=-1, b=-1):
         self.old_text_color = self.text_color
@@ -46,13 +46,13 @@ class FPDF_HTML(FPDF, HTMLMixin):
         except AttributeError:
             pass
 
-    def line(self, x1, y1, x2, y2, color=None, weight=1, style='solid'):
+    def line(self, x1, y1, x2, y2, color=None, width=1, style='solid'):
         if color is not None:
             self.set_draw_color(*color)
 
         if x1 == x2:
             # vertical
-            for line in range(1, weight+1, 1):
+            for line in range(1, width+1, 1):
                 if style == 'dashed':
                     super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
                 else:
@@ -60,7 +60,7 @@ class FPDF_HTML(FPDF, HTMLMixin):
 
         elif y1 == y2:
             # horizontal
-            for line in range(1, weight+1, 1):
+            for line in range(1, width+1, 1):
                 if style == 'dashed':
                     super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
                 else:
@@ -72,18 +72,18 @@ class FPDF_HTML(FPDF, HTMLMixin):
         if color is not None:
             self.restore_draw_color()
 
-    def dashed_line(self, x1, y1, x2, y2, dash_length=1, space_length=1, color=None, weight=1):
+    def dashed_line(self, x1, y1, x2, y2, dash_length=1, space_length=1, color=None, width=1):
         if color is not None:
             self.set_draw_color(*color)
 
         if x1 == x2:
             # vertical
-            for line in range(1, weight+1, 1):
+            for line in range(1, width+1, 1):
                 super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2,
                                                    dash_length, space_length)
         elif y1 == y2:
             # horizontal
-            for line in range(1, weight+1, 1):
+            for line in range(1, width+1, 1):
                 super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2,
                                                    dash_length, space_length)
         else:
@@ -101,7 +101,7 @@ class PDFMixin(object):
     FORMATS = {
         FORMAT_A4: {
             'width': 210,
-            'height': 297
+            'line_height': 297
         },
     }
     ORIENTATION_PORTRAIT = 'P'
@@ -147,18 +147,18 @@ class PDFMixin(object):
     def init_sizes(self):
         # page sizes
         self.page_width = self.FORMATS[self.format]['width']
-        self.page_height = self.FORMATS[self.format]['height']
+        self.page_line_height = self.FORMATS[self.format]['line_height']
 
         if self.orientation == 'L':
-            self.page_width, self.page_height = self.page_height, self.page_width
+            self.page_width, self.page_line_height = self.page_line_height, self.page_width
 
         # content sizes
         self.content_width = self.page_width - self.margin_left - self.margin_right
-        self.content_height = self.page_height - self.margin_top - self.margin_bottom
+        self.content_line_height = self.page_line_height - self.margin_top - self.margin_bottom
 
     def get_pdf_instance(self):
         format_size = dict(self.FORMATS).get(self.format, None)
-        format = self.format if format_size is None else (format_size['width'], format_size['height'])
+        format = self.format if format_size is None else (format_size['width'], format_size['line_height'])
         return self.fpdf_class(self.orientation, self.unit, format)
 
     def init_pdf(self, **kwargs):
@@ -196,21 +196,21 @@ class PDFMixin(object):
 class PDFTablesMixin(PDFMixin):
     tables = []
     default_table_attrs = {
-        'line_weight': {
+        'border_width': {
             'horizontal': 1,
             'vertical': 1
         },
-        'line_style': {
+        'border_style': {
             'horizontal': 'solid',
             'vertical': 'solid'
         },
-        'line_color': {
+        'border_color': {
             'horizontal': colors.BLACK,
             'vertical': colors.BLACK
         },
         'widths': [1],
         'header': {
-            'height': [10],
+            'line_height': [10],
             'padding': [0],
             'align': ['L'],
             'font_style': ['B'],
@@ -220,7 +220,7 @@ class PDFTablesMixin(PDFMixin):
             'max_chars': [None]
         },
         'body': {
-            'height': [5],
+            'line_height': [5],
             'padding': [0],
             'align': ['L'],
             'font_style': [''],
@@ -244,7 +244,7 @@ class PDFTablesMixin(PDFMixin):
         pass
 
     def check_page_break(self, y):
-        if y > self.page_height - self.margin_bottom - max(self.table_attrs['body']['height']):
+        if y > self.page_line_height - self.margin_bottom - max(self.table_attrs['body']['line_height']):
             self.pdf.add_page(self.orientation)
             self.pdf.set_y(self.pdf.t_margin)
             return True
@@ -259,14 +259,14 @@ class PDFTablesMixin(PDFMixin):
         y_max = None
 
         for index, text in enumerate(columns):
-            column_width = self.get_column_attribute('width', index)
-            column_align = self.get_column_attribute('align', index, is_header)
-            column_font_color = self.get_column_attribute('font_color', index, is_header)
-            column_font_style = self.get_column_attribute('font_style', index, is_header)
-            column_fill_color = self.get_column_attribute('fill_color', index, is_header)
-            column_font_size = self.get_column_attribute('font_size', index, is_header)
-            column_height = self.get_column_attribute('height', index, is_header)
-            column_padding = self.get_column_attribute('padding', index, is_header)
+            column_width = self.get_column_attribute('width', index, columns)
+            column_align = self.get_column_attribute('align', index, columns, is_header)
+            column_font_color = self.get_column_attribute('font_color', index, columns, is_header)
+            column_font_style = self.get_column_attribute('font_style', index, columns, is_header)
+            column_fill_color = self.get_column_attribute('fill_color', index, columns, is_header)
+            column_font_size = self.get_column_attribute('font_size', index, columns, is_header)
+            column_line_height = self.get_column_attribute('line_height', index, columns, is_header)
+            column_padding = self.get_column_attribute('padding', index, columns, is_header)
             fill = column_fill_color is not None
             if fill:
                 self.pdf.set_fill_color(*column_fill_color)
@@ -277,9 +277,9 @@ class PDFTablesMixin(PDFMixin):
             self.pdf.set_xy(self.pdf.get_x()+column_padding, self.pdf.get_y()+column_padding)
             self.pdf.multi_cell(
                 #w=column_width-2*column_padding,
-                #h=column_height-2*column_padding,
+                #h=column_line_height-2*column_padding,
                 w=column_width-2*column_padding,
-                h=column_height,
+                h=column_line_height,
                 align=column_align,
                 txt=text,
                 border=False,
@@ -314,14 +314,14 @@ class PDFTablesMixin(PDFMixin):
             return
 
         # color and style
-        color = self.table_attrs['line_color']['horizontal']
-        style = self.table_attrs['line_style']['horizontal']
-        weight = self.table_attrs['line_weight']['horizontal']
+        color = self.table_attrs['border_color']['horizontal']
+        style = self.table_attrs['border_style']['horizontal']
+        width = self.table_attrs['border_width']['horizontal']
 
         if color:
             # line above header
             self.pdf.horizontal_line(self.pdf.l_margin, self.pdf.get_y(), self.content_width,
-                                     weight=weight, color=color, style=style)
+                                     width=width, color=color, style=style)
 
         # header columns
         y_pos = self.write_table_row(header, is_header=True)
@@ -329,7 +329,7 @@ class PDFTablesMixin(PDFMixin):
         if color:
             # line below header
             self.pdf.horizontal_line(self.pdf.l_margin, y_pos, self.content_width,
-                                     weight=weight, color=color, style=style)
+                                     width=width, color=color, style=style)
         self.pdf.set_xy(self.pdf.l_margin, y_pos)
 
     def write_table_body(self, table):
@@ -341,14 +341,14 @@ class PDFTablesMixin(PDFMixin):
             self.pdf.set_xy(self.pdf.l_margin, y_pos)
 
             # color and style
-            color = self.table_attrs['line_color']['horizontal']
-            style = self.table_attrs['line_style']['horizontal']
-            weight = self.table_attrs['line_weight']['horizontal']
+            color = self.table_attrs['border_color']['horizontal']
+            style = self.table_attrs['border_style']['horizontal']
+            width = self.table_attrs['border_width']['horizontal']
 
             if color:
                 # line after each row
                 self.pdf.horizontal_line(self.pdf.l_margin, y_pos, self.content_width,
-                                         weight=weight, color=color, style=style)
+                                         width=width, color=color, style=style)
 
             # check overflow
             if self.check_page_break(y_pos):
@@ -365,13 +365,13 @@ class PDFTablesMixin(PDFMixin):
         x = self.pdf.l_margin
         for index in range(0, self.number_of_columns+1):
             # color and style
-            color = self.table_attrs['line_color']['vertical']
-            style = self.table_attrs['line_style']['vertical']
-            weight = self.table_attrs['line_weight']['vertical']
+            color = self.table_attrs['border_color']['vertical']
+            style = self.table_attrs['border_style']['vertical']
+            width = self.table_attrs['border_width']['vertical']
 
             if color:
                 # vertical line
-                self.pdf.line(x, y_top, x, y_bottom, weight=weight, color=color, style=style)
+                self.pdf.line(x, y_top, x, y_bottom, width=width, color=color, style=style)
             column_width = self.get_column_attribute('width', index)
             x += column_width
 
@@ -395,22 +395,22 @@ class PDFTablesMixin(PDFMixin):
             table_attrs = copy(self.default_table_attrs)
             default_header_attrs = copy(table_attrs['header'])
             default_body_attrs = copy(table_attrs['body'])
-            default_line_color = copy(table_attrs['line_color'])
-            default_line_style = copy(table_attrs['line_style'])
-            default_line_weight = copy(table_attrs['line_weight'])
+            default_border_color = copy(table_attrs['border_color'])
+            default_border_style = copy(table_attrs['border_style'])
+            default_border_width = copy(table_attrs['border_width'])
 
             table_attrs.update(table.get('attrs', {}))
             default_header_attrs.update(table_attrs['header'])
             default_body_attrs.update(table_attrs['body'])
-            default_line_color.update(table_attrs['line_color'])
-            default_line_style.update(table_attrs['line_style'])
-            default_line_weight.update(table_attrs['line_weight'])
+            default_border_color.update(table_attrs['border_color'])
+            default_border_style.update(table_attrs['border_style'])
+            default_border_width.update(table_attrs['border_width'])
 
             table_attrs['header'].update(default_header_attrs)
             table_attrs['body'].update(default_body_attrs)
-            table_attrs['line_color'].update(default_line_color)
-            table_attrs['line_style'].update(default_line_style)
-            table_attrs['line_weight'].update(default_line_weight)
+            table_attrs['border_color'].update(default_border_color)
+            table_attrs['border_style'].update(default_border_style)
+            table_attrs['border_width'].update(default_border_width)
             table['attrs'] = table_attrs
 
             if len(table['attrs'].get('widths')) <= 0:
@@ -439,7 +439,7 @@ class PDFTablesMixin(PDFMixin):
         total_widths = sum((widths * (self.number_of_columns / len(widths) + 1))[:self.number_of_columns])
         self.column_widths = [float(column_width) * self.content_width/total_widths for column_width in widths]
 
-    def get_column_attribute(self, attribute, index, is_header=False):
+    def get_column_attribute(self, attribute, index, row=None, is_header=False):
         if attribute == 'width':
             width_index = int(index % len(self.column_widths))
             return self.column_widths[width_index]

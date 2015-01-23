@@ -3,49 +3,36 @@ from pdf_tables.views import PDFTableView
 
 
 class ExamplePDFView(PDFTableView):
-    def dispatch(self, request, *args, **kwargs):
-        self.build_tables()
-
-        # add unicode font
-        #from django.conf import settings
-        #Arial_ttf = path.normpath(path.join(settings.SITE_ROOT, 'source/%s/static/fonts/arial/%s' % (settings.SITE_NAME, 'arial.ttf')))
-        #ArialBold_ttf = path.normpath(path.join(settings.SITE_ROOT, 'source/%s/static/fonts/arial/%s' % (settings.SITE_NAME, 'arialbd.ttf')))
-        #self.pdf.add_font('Arial', '', Arial_ttf, uni=True)
-        #self.pdf.add_font('Arial', 'B', ArialBold_ttf, uni=True)
-        #self.pdf.set_font(self.font, 'B')
-
-        return self.render()
-
     def write_after_table(self, index):
         if index == 4:
-            color = self.table_attrs['line_color']['vertical']
-            style = self.table_attrs['line_style']['vertical']
-            weight = self.table_attrs['line_weight']['vertical']
+            color = self.table_attrs['border_color']['vertical']
+            style = self.table_attrs['border_style']['vertical']
+            width = self.table_attrs['border_width']['vertical']
             if color:
                 self.pdf.horizontal_line(self.pdf.l_margin, self.pdf.get_y(), self.content_width,
-                                         weight=weight, color=color, style=style)
+                                         width=width, color=color, style=style)
         self.pdf.set_y(self.pdf.get_y()+10)
 
     def build_tables(self):
         self.tables.append({
             'attrs': {
-                'line_color': {
+                'border_color': {
                     'horizontal': colors.RED,
                     'vertical': colors.BLACK
                 },
-                'line_weight': {
+                'border_width': {
                     'horizontal': 3,
                     'vertical': 1
                 },
                 'widths': [10, 15, 20, 25, 30],
                 'header': {
-                    'height': [10],
+                    'line_height': [10],
                     'fill_color': [colors.WHITE, colors.SILVER, colors.GRAY, colors.DARK_GRAY, colors.BLACK],
                     'font_style': ['B', ''],
                     'font_color': [colors.BLACK, colors.BLACK, colors.BLACK, colors.WHITE, colors.WHITE]
                 },
                 'body': {
-                    'height': [10],
+                    'line_height': [10],
                     'font_style': ['']
                 }
             },
@@ -60,15 +47,15 @@ class ExamplePDFView(PDFTableView):
         })
         self.tables.append({
             'attrs': {
-                'line_weight': {
+                'border_width': {
                     'horizontal': 0,
                     'vertical': 0
                 },
                 'header': {
-                    'height': [20]
+                    'line_height': [20]
                 },
                 'body': {
-                    'height': [20],
+                    'line_height': [20],
                     'align': ['L', 'C', 'R']
                 }
             },
@@ -80,23 +67,23 @@ class ExamplePDFView(PDFTableView):
         })
         self.tables.append({
             'attrs': {
-                'line_weight': {
+                'border_width': {
                     'horizontal': 2,
                     'vertical': 2
                 },
-                'line_color': {
+                'border_color': {
                     'horizontal': colors.WHITE,
                     'vertical': colors.WHITE
                 },
                 'header': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'font_color': [colors.WHITE, colors.WHITE, colors.WHITE, colors.BLACK],
                     'fill_color': [colors.GREEN, colors.ORANGE, colors.RED, colors.YELLOW],
                 },
                 'body': {
                     'align': ['C'],
-                    'height': [10],
+                    'line_height': [10],
                     'font_color': [colors.GREEN, colors.ORANGE, colors.RED, colors.YELLOW],
                 }
             },
@@ -110,19 +97,19 @@ class ExamplePDFView(PDFTableView):
         })
         self.tables.append({
             'attrs': {
-                'line_color': {
+                'border_color': {
                     'horizontal': colors.BLACK,
                     'vertical': None
                 },
                 'header': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'fill_color': [colors.GRAY],
                     'font_color': [colors.WHITE],
                 },
                 'body': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'font_color': [colors.GRAY],
                 }
             },
@@ -137,19 +124,19 @@ class ExamplePDFView(PDFTableView):
         })
         self.tables.append({
             'attrs': {
-                'line_color': {
+                'border_color': {
                     'horizontal': colors.WHITE,
                     'vertical': colors.BLACK
                 },
                 'header': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'fill_color': [colors.GRAY],
                     'font_color': [colors.WHITE],
                 },
                 'body': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'font_color': [colors.GRAY],
                 }
             },
@@ -164,23 +151,23 @@ class ExamplePDFView(PDFTableView):
         })
         self.tables.append({
             'attrs': {
-                'line_style': {
+                'border_style': {
                     'horizontal': 'solid',
                     'vertical': 'dashed'
                 },
-                'line_color': {
+                'border_color': {
                     'horizontal': colors.BLACK,
                     'vertical': colors.BLACK
                 },
                 'header': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'fill_color': [colors.GRAY],
                     'font_color': [colors.WHITE],
                 },
                 'body': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'font_color': [colors.GRAY],
                 }
             },
@@ -195,27 +182,27 @@ class ExamplePDFView(PDFTableView):
         })
         self.tables.append({
             'attrs': {
-                'line_style': {
+                'border_style': {
                     'horizontal': 'dashed',
                     'vertical': 'solid'
                 },
-                'line_color': {
+                'border_color': {
                     'horizontal': colors.BLACK,
                     'vertical': colors.SILVER
                 },
-                'line_weight': {
+                'border_width': {
                     'horizontal': 3,
                     'vertical': 1
                 },
                 'header': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'fill_color': [colors.GRAY],
                     'font_color': [colors.WHITE],
                 },
                 'body': {
                     'align': ['C'],
-                    'height': [7],
+                    'line_height': [7],
                     'font_color': [colors.GRAY],
                 }
             },
