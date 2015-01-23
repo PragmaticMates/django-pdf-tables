@@ -55,6 +55,8 @@ class FPDF_HTML(FPDF, HTMLMixin):
             for line in range(1, width+1, 1):
                 if style == 'dashed':
                     super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
+                elif style == 'dotted':
+                    super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2, dash_length=0.1, space_length=1)
                 else:
                     super(FPDF_HTML, self).line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
 
@@ -63,11 +65,18 @@ class FPDF_HTML(FPDF, HTMLMixin):
             for line in range(1, width+1, 1):
                 if style == 'dashed':
                     super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
+                elif style == 'dotted':
+                    super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2, dash_length=0.1, space_length=1)
                 else:
                     super(FPDF_HTML, self).line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
         else:
             # diagonal
-            super(FPDF_HTML, self).line(x1, y1, x2, y2)
+            if style == 'dashed':
+                super(FPDF_HTML, self).dashed_line(x1, y1, x2, y2)
+            elif style == 'dotted':
+                super(FPDF_HTML, self).dashed_line(x1, y1, x2, y2, dash_length=0.1, space_length=0.1)
+            else:
+                super(FPDF_HTML, self).line(x1, y1, x2, y2)
 
         if color is not None:
             self.restore_draw_color()
@@ -101,7 +110,7 @@ class PDFMixin(object):
     FORMATS = {
         FORMAT_A4: {
             'width': 210,
-            'line_height': 297
+            'height': 297
         },
     }
     ORIENTATION_PORTRAIT = 'P'
@@ -147,18 +156,18 @@ class PDFMixin(object):
     def init_sizes(self):
         # page sizes
         self.page_width = self.FORMATS[self.format]['width']
-        self.page_line_height = self.FORMATS[self.format]['line_height']
+        self.page_height = self.FORMATS[self.format]['height']
 
         if self.orientation == 'L':
-            self.page_width, self.page_line_height = self.page_line_height, self.page_width
+            self.page_width, self.page_height = self.page_height, self.page_width
 
         # content sizes
         self.content_width = self.page_width - self.margin_left - self.margin_right
-        self.content_line_height = self.page_line_height - self.margin_top - self.margin_bottom
+        self.content_height = self.page_height - self.margin_top - self.margin_bottom
 
     def get_pdf_instance(self):
         format_size = dict(self.FORMATS).get(self.format, None)
-        format = self.format if format_size is None else (format_size['width'], format_size['line_height'])
+        format = self.format if format_size is None else (format_size['width'], format_size['height'])
         return self.fpdf_class(self.orientation, self.unit, format)
 
     def init_pdf(self, **kwargs):
@@ -243,8 +252,11 @@ class PDFTablesMixin(PDFMixin):
     def write_after_table(self, index):
         pass
 
-    def check_page_break(self, y):
-        if y > self.page_line_height - self.margin_bottom - max(self.table_attrs['body']['line_height']):
+    def check_page_break(self, y=None):
+        if y is None:
+            y = self.pdf.get_y()
+
+        if y > self.page_height - self.margin_bottom - max(self.table_attrs['body']['line_height']):
             self.pdf.add_page(self.orientation)
             self.pdf.set_y(self.pdf.t_margin)
             return True
@@ -252,7 +264,7 @@ class PDFTablesMixin(PDFMixin):
 
     def write_table_row(self, columns, is_header=False):
         # check overflow
-        self.check_page_break(self.pdf.get_y())
+        self.check_page_break()
 
         x = self.pdf.l_margin
         y_init = self.pdf.get_y()
@@ -301,10 +313,6 @@ class PDFTablesMixin(PDFMixin):
         # vertical lines
         self.draw_vertical_lines(y_init, y_max)
 
-        ## check overflow
-        #if self.check_page_break(y_max):
-        #    y_max = self.pdf.get_y()
-
         return y_max
 
     def write_table_header(self, table):
@@ -320,7 +328,7 @@ class PDFTablesMixin(PDFMixin):
 
         if color:
             # check overflow
-            self.check_page_break(self.pdf.get_y())
+            self.check_page_break()
 
             # line above header
             self.pdf.horizontal_line(self.pdf.l_margin, self.pdf.get_y(), self.content_width,
