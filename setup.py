@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='django-pdf-tables',
-    version='0.1.2',
+    version='0.2.0',
     description='A Django app for processing PDF documents with tables',
     long_description=open('README.rst').read(),
     author='Pragmatic Mates',
