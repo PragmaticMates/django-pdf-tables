@@ -149,7 +149,7 @@ class PDFMixin(object):
 #        self.response['Content-Type'] = 'application/octet-stream; charset=UTF-8'
         self.response['Content-Disposition'] =\
             'attachment;filename="%(filename)s"' % {
-                'filename': self.filename
+                'filename': self.get_filename()
             }
         return self.response
 
@@ -164,6 +164,9 @@ class PDFMixin(object):
         # content sizes
         self.content_width = self.page_width - self.margin_left - self.margin_right
         self.content_height = self.page_height - self.margin_top - self.margin_bottom
+
+    def get_filename(self):
+        return self.filename
 
     def get_pdf_instance(self):
         format_size = dict(self.FORMATS).get(self.format, None)
