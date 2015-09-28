@@ -3,6 +3,10 @@ from pdf_tables.views import PDFTableView
 
 
 class ExamplePDFView(PDFTableView):
+    def dispatch(self, request, *args, **kwargs):
+        self.build_tables()
+        return super(ExamplePDFView, self).dispatch(request, *args, **kwargs)
+
     def write_after_table(self, index):
         if index == 4:
             color = self.table_attrs['border_color']['vertical']
@@ -14,6 +18,7 @@ class ExamplePDFView(PDFTableView):
         self.pdf.set_y(self.pdf.get_y()+10)
 
     def build_tables(self):
+        self.tables = []
         self.tables.append({
             'attrs': {
                 'border_color': {
