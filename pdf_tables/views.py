@@ -1,6 +1,6 @@
 from django.views.generic import View
 
-from mixins import PDFMixin, PDFTablesMixin
+from pdf_tables.mixins import PDFMixin, PDFTablesMixin
 
 
 class PDFView(PDFMixin, View):

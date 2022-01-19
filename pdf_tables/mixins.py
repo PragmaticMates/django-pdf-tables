@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from copy import copy
+
+import six
 from fpdf import FPDF, HTMLMixin
 
 from django.http import HttpResponse
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
-from . import colors
+from pdf_tables import colors
 
 
 class FPDF_HTML(FPDF, HTMLMixin):
