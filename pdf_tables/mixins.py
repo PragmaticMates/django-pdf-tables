@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from copy import copy
 
 import six
@@ -117,8 +116,8 @@ class PDFMixin(object):
     ORIENTATION_PORTRAIT = 'P'
     ORIENTATION_LANDSCAPE = 'L'
     ORIENTATIONS = (
-        (ORIENTATION_PORTRAIT, _(u'Portrait')),
-        (ORIENTATION_LANDSCAPE, _(u'Landscape'))
+        (ORIENTATION_PORTRAIT, _('Portrait')),
+        (ORIENTATION_LANDSCAPE, _('Landscape'))
     )
 
     fpdf_class = FPDF_HTML
@@ -144,7 +143,7 @@ class PDFMixin(object):
         self.write_content()
 
         self.response = HttpResponse(
-            content=self.pdf.output(dest='S'),
+            content=bytes(self.pdf.output()),
             content_type='application/octet-stream'
         )
 
