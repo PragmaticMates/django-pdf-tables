@@ -482,7 +482,7 @@ class PDFTablesMixin(PDFMixin):
 
         # calculate column widths
         widths = attrs.get('widths', [1])
-        total_widths = sum((widths * (self.number_of_columns / len(widths) + 1))[:self.number_of_columns])
+        total_widths = sum((widths * int(self.number_of_columns / len(widths) + 1))[:self.number_of_columns])
         self.column_widths = [float(column_width) * self.table_width/total_widths for column_width in widths]
 
     def get_column_attribute(self, attribute, index, row=None, is_header=False):
