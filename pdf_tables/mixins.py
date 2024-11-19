@@ -4,7 +4,7 @@ import six
 from fpdf import FPDF, HTMLMixin
 
 from django.http import HttpResponse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from pdf_tables import colors
 
