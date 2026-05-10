@@ -1,6 +1,5 @@
 from copy import copy
 
-import six
 from fpdf import FPDF, HTMLMixin
 
 from django.http import HttpResponse
@@ -135,7 +134,7 @@ class PDFMixin(object):
 
     def render(self, **kwargs):
         # Go through keyword arguments and save their values to instance
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
         self.init_sizes()
@@ -305,7 +304,7 @@ class PDFTablesMixin(PDFMixin):
                     w=column_width,
                     h=column_line_height+2*column_padding,
                     align=column_align,
-                    txt='',
+                    text='',
                     border=False,
                     fill=fill
                 )
@@ -316,7 +315,7 @@ class PDFTablesMixin(PDFMixin):
                 w=column_width-2*column_padding,
                 h=column_line_height,
                 align=column_align,
-                txt=text,
+                text=text,
                 border=False,
                 fill=fill
             )

@@ -16,7 +16,7 @@ setup(
         'pdf_tables',
     ],
     include_package_data=True,
-    install_requires=('fpdf', 'django>=3'),
+    install_requires=('fpdf2', 'django>=3'),
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
