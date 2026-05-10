@@ -1,6 +1,6 @@
 from copy import copy
 
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF
 
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from pdf_tables import colors
 
 
-class FPDF_HTML(FPDF, HTMLMixin):
+class FPDF_HTML(FPDF):
     def vertical_line(self, x, y, length, color=None, width=1, style='solid'):
         self.line(x, y, x, y+length, color=color, width=width, style=style)
 
