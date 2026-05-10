@@ -53,9 +53,13 @@ class FPDF_HTML(FPDF):
             # vertical
             for line in range(1, width+1, 1):
                 if style == 'dashed':
-                    super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
+                    self.set_dash_pattern(dash=1, gap=1)
+                    super(FPDF_HTML, self).line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
+                    self.set_dash_pattern()
                 elif style == 'dotted':
-                    super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2, dash_length=0.1, space_length=1)
+                    self.set_dash_pattern(dash=0.1, gap=1)
+                    super(FPDF_HTML, self).line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
+                    self.set_dash_pattern()
                 else:
                     super(FPDF_HTML, self).line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
 
@@ -63,17 +67,25 @@ class FPDF_HTML(FPDF):
             # horizontal
             for line in range(1, width+1, 1):
                 if style == 'dashed':
-                    super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
+                    self.set_dash_pattern(dash=1, gap=1)
+                    super(FPDF_HTML, self).line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
+                    self.set_dash_pattern()
                 elif style == 'dotted':
-                    super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2, dash_length=0.1, space_length=1)
+                    self.set_dash_pattern(dash=0.1, gap=1)
+                    super(FPDF_HTML, self).line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
+                    self.set_dash_pattern()
                 else:
                     super(FPDF_HTML, self).line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
         else:
             # diagonal
             if style == 'dashed':
-                super(FPDF_HTML, self).dashed_line(x1, y1, x2, y2)
+                self.set_dash_pattern(dash=1, gap=1)
+                super(FPDF_HTML, self).line(x1, y1, x2, y2)
+                self.set_dash_pattern()
             elif style == 'dotted':
-                super(FPDF_HTML, self).dashed_line(x1, y1, x2, y2, dash_length=0.1, space_length=0.1)
+                self.set_dash_pattern(dash=0.1, gap=0.1)
+                super(FPDF_HTML, self).line(x1, y1, x2, y2)
+                self.set_dash_pattern()
             else:
                 super(FPDF_HTML, self).line(x1, y1, x2, y2)
 
@@ -87,21 +99,23 @@ class FPDF_HTML(FPDF):
         if x1 == x2:
             # vertical
             for line in range(1, width+1, 1):
-                super(FPDF_HTML, self).dashed_line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2,
-                                                   dash_length, space_length)
+                self.set_dash_pattern(dash=dash_length, gap=space_length)
+                super(FPDF_HTML, self).line(x1 + (line - 1)*0.2, y1, x2 + (line - 1)*0.2, y2)
+                self.set_dash_pattern()
         elif y1 == y2:
             # horizontal
             for line in range(1, width+1, 1):
-                super(FPDF_HTML, self).dashed_line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2,
-                                                   dash_length, space_length)
+                self.set_dash_pattern(dash=dash_length, gap=space_length)
+                super(FPDF_HTML, self).line(x1, y1 + (line - 1)*0.2, x2, y2 + (line - 1)*0.2)
+                self.set_dash_pattern()
         else:
             # diagonal
-            super(FPDF_HTML, self).dashed_line(x1, y1, x2, y2, dash_length, space_length)
+            self.set_dash_pattern(dash=dash_length, gap=space_length)
+            super(FPDF_HTML, self).line(x1, y1, x2, y2)
+            self.set_dash_pattern()
 
         if color is not None:
             self.restore_draw_color()
-
-        super(FPDF_HTML, self).dashed_line(x1, y1, x2, y2, dash_length, space_length)
 
 
 class PDFMixin(object):
